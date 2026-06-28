@@ -21,6 +21,33 @@
 
 ---
 
+## 🏗️ Model Architecture
+
+![Architecture](assets/architecture.png)
+
+The pipeline combines a 7-layer Conv3D network for spatial and temporal feature extraction, followed by LSTM layers for sequence modelling, dense layers, and a pre-trained autoencoder decoder — reconstructing speech from silent lip movements alone.
+
+---
+
+## 📊 Output Samples
+
+### Features & Reconstructed Spectrogram
+![Spectrogram noisy](assets/spectrogram_noisy.png)
+
+The model extracts lip features (top) and reconstructs the audio spectrogram (second row). Even with noisy bottleneck features (third row), the reconstructed spectrogram (bottom) closely matches the original speech signal.
+
+### Blurry Features vs Original Spectrogram
+![Spectrogram blurry](assets/spectrogram_blurry.png)
+
+Comparison of blurry bottleneck features against the reconstructed and original spectrograms — demonstrating the model's robustness to input degradation.
+
+### Audio Reconstruction Quality
+![Reconstruction](assets/reconstruction.png)
+
+End-to-end reconstruction results on the test set — showing the reconstructed auditory spectrogram, original audio, reconstructed waveform (MSE=0.00082), and feature comparison.
+
+---
+
 ## ⚙️ How it works
 
 ```
@@ -33,13 +60,16 @@ Lip region extraction (OpenCV)
 Frame sampling @ 25 fps
     │
     ▼
-Pixel normalisation + tensor conversion
+7-layer Conv3D → spatial + temporal features
     │
     ▼
-Noise filtering
+LSTM → sequence modelling
     │
     ▼
-CNN inference → predicted word
+Dense layers → Autoencoder decoder
+    │
+    ▼
+Reconstructed speech spectrogram → predicted word
 ```
 
 ---
@@ -49,18 +79,24 @@ CNN inference → predicted word
 ```
 lip-reading-assistant/
 │
+├── assets/                       # Output screenshots
+│   ├── architecture.png
+│   ├── spectrogram_noisy.png
+│   ├── spectrogram_blurry.png
+│   └── reconstruction.png
+│
 ├── preprocessing/
-│   ├── lip_extractor.py      # Lip region detection and cropping
-│   ├── frame_sampler.py      # Uniform frame sampling at 25 fps
-│   └── tensor_pipeline.py    # Normalisation + tensor conversion
+│   ├── lip_extractor.py          # Lip region detection and cropping
+│   ├── frame_sampler.py          # Uniform frame sampling at 25 fps
+│   └── tensor_pipeline.py        # Normalisation + tensor conversion
 │
 ├── model/
-│   ├── cnn_architecture.py   # CNN model definition
-│   ├── train.py              # Training with LR scheduling
-│   └── evaluate.py           # Accuracy + confusion matrix
+│   ├── cnn_architecture.py       # Conv3D + LSTM architecture
+│   ├── train.py                  # Training with LR scheduling
+│   └── evaluate.py               # Accuracy + confusion matrix
 │
 ├── notebooks/
-│   └── experiment_log.ipynb  # Hyperparameter tuning experiments
+│   └── experiment_log.ipynb      # Hyperparameter tuning experiments
 │
 └── README.md
 ```
